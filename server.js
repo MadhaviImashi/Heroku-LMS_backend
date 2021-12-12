@@ -1,6 +1,6 @@
-//import express pckg
+//import express pckg which helps to manage routes, to handle requests and views
 const express = require("express");
-//import mongoose
+//import mongoose which can be used to create schemas to build up relationship between our node.js codebase and the mongoDB
 const mongoose = require("mongoose");
 //import 2 mongoose collections
 const Book = require("./models/book")
