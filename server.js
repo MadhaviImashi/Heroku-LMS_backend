@@ -5,7 +5,8 @@ const mongoose = require("mongoose");
 //import 2 mongoose collections
 const Book = require("./models/book")
 const Member = require("./models/member")
-
+//import cors 3rd party pckg- to enable communication between 2 different host platforms(firebase, heroku)
+const cors = require("cors");
 
 //create a server using Express.js
 const server = express();
@@ -29,6 +30,8 @@ mongoose.connect(databaseURl, {
   console.log(error);
   })
 
+//add a cors parameter to each request header
+server.use(cors());
 //hence post request URL is encoded, we need to first decode them
 server.use(express.urlencoded({ extended: true }));
 //specify the type of request data as JSON
