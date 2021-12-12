@@ -81,7 +81,7 @@ server.get("/book/:id", async (req, res) => {
 server.post("/book", async (req, res) => {
   const { title, author } = req.body;
 
-  //create a book object using mongoDB function- save()
+  //create a book object using mongoDB function-save()
   const book_obj = new Book({
     title,
     author,
@@ -91,7 +91,7 @@ server.post("/book", async (req, res) => {
   });
 
   const response = await book_obj.save(); //have to wait cuz this is an Async function
-  res.send(convertToMember(response))
+  res.send(convertToBook(response))
 });
 
 // /book/:id/burrow : burrow book
