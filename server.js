@@ -37,18 +37,43 @@ server.use(express.urlencoded({ extended: true }));
 //specify the type of request data as JSON
 server.use(express.json());
 
+//---------------------------------------------------------------------for Books--------------------------------------------------------
+
+//a function to convert the data retrieved from the DB to a correct format of the Book
+const convertToBook = (book) => {
+  return {
+    id: book._id,
+    title: book.title,
+    author: book.author,
+    isAvailable: book.isAvailable,
+    burrowedMemberId: book.burrowedMemberId,
+    burrowedDate: book.burrowedDate,
+  }
+}
+
+const sendBook = async (res, id) => {
+  const book = await Book.findById(id);
+  res.send(convertToBook(book));
+}
+
 // /book :View all books
 server.get("/book", async (req, res) => {
   const response = await Book.find();
-  res.send(response)
+  //send the correct format of the book as the response
+  
+  res.send(
+    response.map((book) => {
+      return convertToBook(book);
+    })
+  );
 });
 
 // /book/:id : get single book
 server.get("/book/:id", async (req, res) => {
   const id = req.params.id;
   const response = await Book.findById(id);
-  console.log(response);
-  res.send(response)
+  //send the correct format of the book as the response
+  res.send(convertToBook(response))
 });
 
 // /book: : Post: add book
@@ -57,11 +82,16 @@ server.post("/book", async (req, res) => {
   const { title, author } = req.body;
 
   //create a book object using mongoDB function- save()
-  const book_obj = new Book({ title, author });
+  const book_obj = new Book({
+    title,
+    author,
+    isAvailable: true,
+    burrowedMemberId: '',
+    burrowedDate: ''
+  });
 
   const response = await book_obj.save(); //have to wait cuz this is an Async function
-  console.log(response)
-  res.send(response)
+  res.send(convertToMember(response))
 });
 
 // /book/:id/burrow : burrow book
@@ -77,7 +107,7 @@ server.put("/book/:id/burrow", async (req, res) => {
     burrowedDate
   });
 
-  res.send(burrowedBook)
+  sendBook(res, id);
 });
 
 // /book/:id/return : return book
@@ -91,7 +121,7 @@ server.put("/book/:id/return", async (req, res) => {
     burrowedDate: ''
   });
 
-  res.send(returnedBook);
+  sendBook(res, id);
 });
 
 // /book/:id Put: Edit a book
@@ -104,7 +134,8 @@ server.put("/book/:id", async(req, res) => {
     title: title,
     author: author
   });
-  res.send(updatedBook);
+  // res.send(updatedBook); 
+  sendBook(res, id);
 });
 
 // /book/:id :Delete: Delete book
@@ -118,53 +149,32 @@ server.delete("/book/:id", async (req, res) => {
 
 //---------------------------------------------------------------------for Members--------------------------------------------------------
 
-// let members = [
-//   {
-//     id: "1",
-//     firstName: "Imashi",
-//     lastName: "Uyanahewa",
-//     phone: "+94 77 123 5869",
-//     address: "dkdkdk",
-//     nic: "995079223v",
-//     userType: "",
-//     isAvailable: true,
-//   },
-//   {
-//     id: "2",
-//     firstName: "Pavani",
-//     lastName: "Fernando",
-//     phone: "+94 77 123 5869",
-//     address: "dkdkdk",
-//     nic: "995279223v",
-//     userType: "",
-//     isAvailable: true,
-//   },
-//   {
-//     id: "3",
-//     firstName: "Hashani",
-//     lastName: "Gamage",
-//     phone: "+94 77 123 5869",
-//     address: "dkddfdkdk",
-//     nic: "995073223v",
-//     userType: "",
-//     isAvailable: true,
-//   },
-//   {
-//     id: "4",
-//     firstName: "Sahasra",
-//     lastName: "Withanage",
-//     phone: "+94 77 123 5869",
-//     address: "dkdkdf dk",
-//     nic: "998079223v",
-//     userType: "",
-//     isAvailable: true,
-//   },
-// ];
+//a function to convert the data retrieved from the DB to a correct format of the Book
+const convertToMember = (member) => {
+  return {
+    id: member._id,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    phone: member.phone,
+    address: member.address,
+    nic: member.nic,
+    userType: member.userType,
+    isAvailable: member.isAvailable
+  }
+};
 
+const sendMember = async (res, id) => {
+  const member = await Member.findById(id);
+  res.send(convertToMember(member));
+}
 // /member : view all members
 server.get("/member", async (req, res) => {
   const members = await Member.find()
-  res.send(members);
+  res.send(
+    members.map((member) => {
+      return convertToMember(member)
+    })
+  );
 });
 
 // /member/:id : view single member
@@ -172,7 +182,7 @@ server.get("/member", async (req, res) => {
 server.get("/member/:id", async (req, res) => {
   const id = req.params.id;
   const member = await Member.findById(id);
-  res.send(member);
+  res.send(convertToMember(member));
 });
 
 // /member : add new member
@@ -188,7 +198,7 @@ server.post("/member", async(req, res) => {
     userType
   });
   const response = await member_Obj.save();
-  res.send(response);
+  res.send(convertToMember(response));
 });
 
 // /member/:id : edit member details
@@ -205,7 +215,8 @@ server.put("/member/:id", async (req, res) => {
     nic,
     userType
   });
-  res.send(updatedMember);
+  // res.send(updatedMember);
+  sendMember(res, id)
 });
 
 // /member/:id : delete member
